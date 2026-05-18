@@ -26,7 +26,7 @@ Extends the advection framework to the inviscid Burgers equation. Implements unl
 
 1D and 2D compressible hydrodynamics solvers for the Euler equations.
 
-- **1D CGF solver** — piecewise constant and piecewise linear reconstruction with an exact/CGF Riemann solver; validated against the Sod shock tube exact solution.
+- **1D CGF solver** — piecewise constant and piecewise linear reconstruction with an exact/CGF Riemann solver (following Zingale's formulation); validated against the Sod shock tube exact solution.
 - **1D HLL/HLLC solvers** — piecewise linear reconstruction with minmod limiting; HLL and HLLC Riemann solvers compared on the Sod shock tube. The HLL and HLLC solvers follow Toro's formulation.
 - **2D HLL solver** — unsplit 2D Euler solver with HLL fluxes; tested on the Sedov blast wave.
 
