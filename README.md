@@ -1,4 +1,4 @@
-# Finite-Volume
+# Finite Volume Method for Hydro- and Magnetohydro-dyanmics problems
 
 A collection of finite-volume solvers for fluid and plasma physics, progressing from simple 1D advection through 2D compressible hydrodynamics and 1D ideal MHD. The chapter-based notebooks follow Zingale's *Introduction to Computational Astrophysical Hydrodynamics*, and the Euler equation solvers using the HLL and HLLC Riemann solvers were modeled after Toro's *Riemann Solvers and Numerical Methods for Fluid Dynamics*. The MHD code was modeled after Carolyn Wendeln's 1D MHD implementation, [Wendeln-FVM-github](https://github.com/wendelnc/1D_FVM_Euler_MHD.git).
 
