@@ -1,0 +1,105 @@
+Step: 10, Time: 0.0189912174
+  max |div B| = 6.072e-17
+Step: 20, Time: 0.0379824333
+  max |div B| = 6.939e-17
+Step: 30, Time: 0.0569736487
+  max |div B| = 8.153e-17
+Step: 40, Time: 0.0759648640
+  max |div B| = 9.021e-17
+Step: 50, Time: 0.0949560793
+  max |div B| = 9.021e-17
+Step: 60, Time: 0.1139472945
+  max |div B| = 1.076e-16
+Step: 70, Time: 0.1329385102
+  max |div B| = 1.154e-16
+Step: 80, Time: 0.1519297258
+  max |div B| = 1.076e-16
+Step: 90, Time: 0.1709209414
+  max |div B| = 1.318e-16
+Step: 100, Time: 0.1899121569
+  max |div B| = 1.249e-16
+Step: 110, Time: 0.2089033716
+  max |div B| = 1.370e-16
+Step: 120, Time: 0.2278945857
+  max |div B| = 1.390e-16
+Step: 130, Time: 0.2468857999
+  max |div B| = 1.440e-16
+Step: 140, Time: 0.2658770146
+  max |div B| = 1.391e-16
+Step: 150, Time: 0.2848682294
+  max |div B| = 1.391e-16
+Step: 160, Time: 0.3038594437
+  max |div B| = 1.396e-16
+Step: 170, Time: 0.3228506567
+  max |div B| = 1.517e-16
+Step: 180, Time: 0.3418418687
+  max |div B| = 1.496e-16
+Step: 190, Time: 0.3608330794
+  max |div B| = 1.472e-16
+Step: 200, Time: 0.3798242888
+  max |div B| = 1.476e-16
+Step: 210, Time: 0.3988154969
+  max |div B| = 1.476e-16
+Step: 220, Time: 0.4178067034
+  max |div B| = 1.476e-16
+Step: 230, Time: 0.4367979078
+  max |div B| = 1.476e-16
+Step: 240, Time: 0.4557891095
+  max |div B| = 1.476e-16
+Step: 250, Time: 0.4747803078
+  max |div B| = 1.476e-16
+Step: 260, Time: 0.4937715024
+  max |div B| = 1.476e-16
+Step: 270, Time: 0.5127626917
+  max |div B| = 1.476e-16
+Step: 280, Time: 0.5317538768
+  max |div B| = 1.476e-16
+Step: 290, Time: 0.5507450556
+  max |div B| = 1.476e-16
+Step: 300, Time: 0.5697362250
+  max |div B| = 1.476e-16
+Step: 310, Time: 0.5887273857
+  max |div B| = 1.476e-16
+Step: 320, Time: 0.6077185318
+  max |div B| = 1.527e-16
+Step: 330, Time: 0.6267096647
+  max |div B| = 1.476e-16
+Step: 340, Time: 0.6457007775
+  max |div B| = 1.476e-16
+Step: 350, Time: 0.6646918706
+  max |div B| = 1.476e-16
+Step: 360, Time: 0.6836829358
+  max |div B| = 1.476e-16
+Step: 370, Time: 0.7026739708
+  max |div B| = 1.561e-16
+Step: 380, Time: 0.7216649659
+  max |div B| = 1.717e-16
+Step: 390, Time: 0.7406559178
+  max |div B| = 1.678e-16
+Step: 400, Time: 0.7596468117
+  max |div B| = 1.691e-16
+Step: 410, Time: 0.7786376457
+  max |div B| = 1.691e-16
+Step: 420, Time: 0.7976283968
+  max |div B| = 1.691e-16
+Step: 430, Time: 0.8166190632
+  max |div B| = 1.691e-16
+Step: 440, Time: 0.8356096142
+  max |div B| = 1.691e-16
+Step: 450, Time: 0.8546000415
+  max |div B| = 1.691e-16
+Step: 460, Time: 0.8735903070
+  max |div B| = 1.691e-16
+Step: 470, Time: 0.8925803992
+  max |div B| = 1.691e-16
+Step: 480, Time: 0.9115702602
+  max |div B| = 1.691e-16
+Step: 490, Time: 0.9305598837
+  max |div B| = 1.691e-16
+Step: 500, Time: 0.9495491815
+  max |div B| = 1.691e-16
+Step: 510, Time: 0.9685381494
+  max |div B| = 1.691e-16
+Step: 520, Time: 0.9875266619
+  max |div B| = 1.691e-16
+Finished at Step: 527, Time: 1.000

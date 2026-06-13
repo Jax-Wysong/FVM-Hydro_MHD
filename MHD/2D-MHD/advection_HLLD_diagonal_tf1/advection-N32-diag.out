@@ -1,0 +1,53 @@
+Step: 10, Time: 0.0379824348
+  max |div B| = 1.735e-17
+Step: 20, Time: 0.0759648666
+  max |div B| = 2.689e-17
+Step: 30, Time: 0.1139472976
+  max |div B| = 2.949e-17
+Step: 40, Time: 0.1519297296
+  max |div B| = 3.946e-17
+Step: 50, Time: 0.1899121626
+  max |div B| = 3.865e-17
+Step: 60, Time: 0.2278945951
+  max |div B| = 3.990e-17
+Step: 70, Time: 0.2658770277
+  max |div B| = 4.163e-17
+Step: 80, Time: 0.3038594614
+  max |div B| = 4.337e-17
+Step: 90, Time: 0.3418418959
+  max |div B| = 4.361e-17
+Step: 100, Time: 0.3798243304
+  max |div B| = 4.362e-17
+Step: 110, Time: 0.4178067645
+  max |div B| = 4.362e-17
+Step: 120, Time: 0.4557891982
+  max |div B| = 4.362e-17
+Step: 130, Time: 0.4937716317
+  max |div B| = 4.396e-17
+Step: 140, Time: 0.5317540640
+  max |div B| = 4.468e-17
+Step: 150, Time: 0.5697364958
+  max |div B| = 4.470e-17
+Step: 160, Time: 0.6077189266
+  max |div B| = 4.470e-17
+Step: 170, Time: 0.6457013561
+  max |div B| = 4.470e-17
+Step: 180, Time: 0.6836837837
+  max |div B| = 4.510e-17
+Step: 190, Time: 0.7216662088
+  max |div B| = 4.987e-17
+Step: 200, Time: 0.7596486309
+  max |div B| = 5.703e-17
+Step: 210, Time: 0.7976310486
+  max |div B| = 5.399e-17
+Step: 220, Time: 0.8356134613
+  max |div B| = 5.459e-17
+Step: 230, Time: 0.8735958679
+  max |div B| = 5.458e-17
+Step: 240, Time: 0.9115782670
+  max |div B| = 5.457e-17
+Step: 250, Time: 0.9495606576
+  max |div B| = 5.457e-17
+Step: 260, Time: 0.9875430374
+  max |div B| = 5.457e-17
+Finished at Step: 264, Time: 1.000
