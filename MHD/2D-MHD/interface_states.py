@@ -96,8 +96,8 @@ def PLM_x(q, Bx_face, dx, dt, gamma):  # takes conservative form
     ny_g = q.shape[1]   # ny + 2*nghost
     nx_g = q.shape[2]   # nx + 2*nghost
     w = conversions.cons_to_prim(q, gamma)   # work with primitive form for slope limiting
-    q_L = np.zeros_like(q)
-    q_R = np.zeros_like(q)
+    w_L = np.zeros_like(q)
+    w_R = np.zeros_like(q)
 
     for j in range(nghost - 1, ny_g - nghost + 1): # loops go left and right 1 of physical domain
         for i in range(nghost - 1, nx_g - nghost + 1):
@@ -131,17 +131,17 @@ def PLM_x(q, Bx_face, dx, dt, gamma):  # takes conservative form
             px_bx = (w[5, j, i+1] - w[5, j, i-1]) / (2*dx)
             sigma = np.array([0, 0, 0, 0, 0, 0, uy*px_bx, 0])
 
-            q_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
-            q_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
+            w_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
+            w_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
             
-            q_L[5, j, i] = Bx_face[j, i  ]
-            q_R[5, j, i] = Bx_face[j, i-1]
+            w_L[5, j, i] = Bx_face[j, i  ]
+            w_R[5, j, i] = Bx_face[j, i-1]
             
             
 
 
-    q_L = conversions.prim_to_cons(q_L, gamma)   # return interface states in conserved form
-    q_R = conversions.prim_to_cons(q_R, gamma)
+    q_L = conversions.prim_to_cons(w_L, gamma)   # return interface states in conserved form
+    q_R = conversions.prim_to_cons(w_R, gamma)
     return q_L, q_R
 
 def PLM_y(q, By_face, dx, dy, dt, gamma):  # takes conservative form
@@ -170,8 +170,8 @@ def PLM_y(q, By_face, dx, dy, dt, gamma):  # takes conservative form
     ny_g = q.shape[1]   # ny + 2*nghost
     nx_g = q.shape[2]   # nx + 2*nghost
     w = conversions.cons_to_prim(q, gamma)   # work with primitive form for slope limiting
-    q_L = np.zeros_like(q)
-    q_R = np.zeros_like(q)
+    w_L = np.zeros_like(q)
+    w_R = np.zeros_like(q)
 
     for j in range(nghost - 1, ny_g - nghost + 1):
         for i in range(nghost - 1, nx_g - nghost + 1):
@@ -204,12 +204,12 @@ def PLM_y(q, By_face, dx, dy, dt, gamma):  # takes conservative form
             py_by = (w[6, j+1, i] - w[6, j-1, i]) / (2*dy)
             sigma = np.array([0, 0, 0, 0, 0, ux*py_by, 0, 0])
 
-            q_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
-            q_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
+            w_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
+            w_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
             
-            q_L[6, j, i] = By_face[j, i]
-            q_R[6, j, i] = By_face[j-1, i]
+            w_L[6, j, i] = By_face[j, i]
+            w_R[6, j, i] = By_face[j-1, i]
 
-    q_L = conversions.prim_to_cons(q_L, gamma)   # return interface states in conserved form
-    q_R = conversions.prim_to_cons(q_R, gamma)
+    q_L = conversions.prim_to_cons(w_L, gamma)   # return interface states in conserved form
+    q_R = conversions.prim_to_cons(w_R, gamma)
     return q_L, q_R
