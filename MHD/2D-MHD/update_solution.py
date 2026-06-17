@@ -71,7 +71,13 @@ def evolve(q_ghosted, nghost, DOFs, nx, ny, dx, dy, C, t_final, gamma, Bx_face, 
 
         # PLM: characteristic-upwinded interface states
         q_L_x_hat, q_R_x_hat = interface_states.PLM_x(q, Bx_face, dx, dt, gamma)     # returns q^{n+1/2}_{i+1/2,j,L/R}
-        q_L_y_hat, q_R_y_hat = interface_states.PLM_y(q, By_face, dx, dy, dt, gamma) # returns q^{n+1/2}_{i,j+1/2,L/R}
+        q_L_y_hat, q_R_y_hat = interface_states.PLM_y(q, By_face, dy, dt, gamma) # returns q^{n+1/2}_{i,j+1/2,L/R}
+        
+        BC.periodic_bc(q_L_x_hat, nghost)
+        BC.periodic_bc(q_R_x_hat, nghost)
+        BC.periodic_bc(q_L_y_hat, nghost)
+        BC.periodic_bc(q_R_y_hat, nghost)
+
 
         ############################################################################################
         # 4) Transverse-flux-corrected x/y-interface states (Zingale 8.6):
@@ -272,7 +278,8 @@ def evolve(q_ghosted, nghost, DOFs, nx, ny, dx, dy, C, t_final, gamma, Bx_face, 
             print(f"Step: {nt}, Time: {t:.10f}")
             divB = (Bx_face[nghost:nghost+ny, nghost:nghost+nx] - Bx_face[nghost:nghost+ny, nghost-1:nghost+nx-1]) / dx \
                 + (By_face[nghost:nghost+ny, nghost:nghost+nx] - By_face[nghost-1:nghost+ny-1, nghost:nghost+nx]) / dy
-            print(f"  max |div B| = {np.abs(divB).max():.3e}")
+            print(f"  max face |div B| = {np.abs(divB).max():.3e}")
+            
 
         if snapshot_callback is not None and snapshot_every > 0 and nt % snapshot_every == 0:
             snapshot_callback(q[:, nghost:nghost+ny, nghost:nghost+nx], t, nt)

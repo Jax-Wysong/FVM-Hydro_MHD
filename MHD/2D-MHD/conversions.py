@@ -33,7 +33,7 @@ def cons_to_prim(U, gamma):
     
     # recover primitive variables
     rho_prim = rho_cons
-    rho_prim = np.maximum(rho_prim, 1e-15)
+    # rho_prim = np.maximum(rho_prim, 1e-15)
     ux_prim  = rho_ux_cons/rho_prim   # x-velocity
     uy_prim  = rho_uy_cons/rho_prim   # y-velocity
     uz_prim  = rho_uz_cons/rho_prim   # z-velocity
@@ -46,7 +46,7 @@ def cons_to_prim(U, gamma):
     ME = 0.5*(bx_prim**2 + by_prim**2 + bz_prim**2)             # magnetic energy density
     
     p_prim = (gamma - 1.0) * (E_prim - KE - ME)   # pressure from gamma-law EOS
-    p_prim = np.maximum(p_prim, 1e-15)
+    # p_prim = np.maximum(p_prim, 1e-15)
     
     # assign primitive variables to output vector
     U_prim[0] = rho_prim

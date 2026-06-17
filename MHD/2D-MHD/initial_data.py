@@ -57,6 +57,12 @@ def loop_advection(x, y, gamma, A0=1e-3,R=0.3):
     cos_t  = 2.0/v0
     sin_t  = 1.0/v0
     
+    # x advection
+    # v0     = 2.0
+    # cos_t  = 1.0
+    # sin_t  = 0.0
+    
+    # y advection
     # v0     = 1.0
     # cos_t  = 0.0
     # sin_t  = 1.0

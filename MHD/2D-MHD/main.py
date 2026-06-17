@@ -92,12 +92,12 @@ from config import nghost, DOFs
 gamma   = 5/3
 
 t0      = 0.0
-tf      = 1.0
+tf      = 2.0
 
 xL      = -1.0;  xR  = 1.0
 yL      = -0.5;  yR  = 0.5
 
-N       = 16
+N       = 64
 nx      = 2*N
 ny      = N
 
@@ -113,7 +113,7 @@ CFL     = 0.4
 
 
 q_ghost_IC_advection, \
-    Bx_face, By_face    = initial_data.advection_setup(xL, xR, yL, yR, nx, ny, dx, dy, X, Y, gamma, nghost, DOFs)
+        Bx_face, By_face    = initial_data.advection_setup(xL, xR, yL, yR, nx, ny, dx, dy, X, Y, gamma, nghost, DOFs)
 # returns 
 # q_ghost_IC_advection[8, ny+2*nghost, nx+2*nghost]
 # Bx_face[ny+2*nghost, nx+2*nghost] (Periodic BC already implemented)
@@ -129,8 +129,8 @@ q_ghost_IC_advection, \
 snapshot = lambda q, t, nt: plotting.save_snapshot_advection(X, Y, q, t, nt, N, gamma, 'Field Loop Advection', 'HLLD')
 
 q_sol_advection, q0_advection,all_solns_advection, all_t_advection = update_solution.evolve(
-    q_ghost_IC_advection, nghost, DOFs, nx, ny, dx, dy, CFL, tf, gamma, Bx_face, By_face, Riemann.HLLD,
-    snapshot_callback=snapshot, snapshot_every=20)
+        q_ghost_IC_advection, nghost, DOFs, nx, ny, dx, dy, CFL, tf, gamma, Bx_face, By_face, Riemann.HLLD,
+        snapshot_callback=snapshot, snapshot_every=20)
 
 
 plotting.plot_solution_advection(X, Y, q_sol_advection, q0_advection, tf, gamma, N, 'Field Loop Advection', 'HLLD',True)
