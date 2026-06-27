@@ -26,6 +26,7 @@ import numpy as np
 #user defined libs
 import conversions
 import boundary_conditions
+import CT_update_RK
 
 def loop_advection(x, y, gamma, A0=1e-3,R=0.3):
     '''
@@ -127,49 +128,55 @@ def advection_setup(xL, xR, yL, yR, nx, ny, dx, dy, X, Y, gamma, nghost, DOFs):
     #need vector valued solution vector U = (rho, rho u, rho v, E, bx, by, bz)
     q_IC_advection = np.array([[loop_advection(x, y, gamma) for x in X] for y in Y]) # shape: (ny, nx, DOF)
     q_IC_advection = np.moveaxis(q_IC_advection, -1, 0) # shape: (DOF, ny, nx)
-    q_ghost_IC_advection = np.zeros((DOFs, ny + 2*nghost, nx + 2*nghost))
+    
+    Ny = ny + 2*nghost
+    Nx = nx + 2*nghost
+    
+    q_ghost_IC_advection = np.zeros((DOFs, Ny, Nx))
     q_ghost_IC_advection[:, nghost:nghost+ny, nghost:nghost+nx] = q_IC_advection
     # --------------------------------------------------------------------------
-
+    
 
     ### need to make and initialize face-centered Bx and By arrays
     A0_loop = 1e-3
     R_loop  = 0.3
 
     # A_z evaluated at cell corners (xL + i*dx, yL + j*dy)
-    x_corn = xL + np.arange(-nghost, nx+nghost+1) * dx   # nx+2*nghost+1 points
-    y_corn = yL + np.arange(-nghost, ny+nghost+1) * dy   # ny+2*nghost+1 points
-    XX, YY = np.meshgrid(x_corn, y_corn)      # (ny+2*nghost+1, nx+2*nghost+1)
+    x_corn = xL + (np.arange(Nx + 1) - nghost) * dx   
+    y_corn = yL + (np.arange(Ny + 1) - nghost) * dy
+    XX, YY = np.meshgrid(x_corn, y_corn)      
     R_c = np.sqrt(XX**2 + YY**2)
     Az  = np.where(R_c <= R_loop, A0_loop*(R_loop - R_c), 0.0)
-
+    
     # Bx = dAz/dy at each x-face
     # Bx_face made so that Bx_face[j,i  ] is at the right face of the cell
     #                      Bx_face[j,i-1] is at the left face of the cell
-    Bx_face = np.zeros((ny+2*nghost, nx+2*nghost))
-    Bx_face[nghost:nghost+ny, nghost:nghost+nx] = (Az[nghost+1:nghost+ny+1, nghost+1:nghost+nx+1] - Az[nghost:nghost+ny, nghost+1:nghost+nx+1]) / dy
-    
-    #periodic boundary
-    Bx_face[:,  :nghost]   = Bx_face[:, -2*nghost:-nghost]   
-    Bx_face[:, -nghost:]   = Bx_face[:,   nghost:2*nghost]
-    Bx_face[:nghost, : ]   = Bx_face[-2*nghost:-nghost, :]   
-    Bx_face[-nghost:,: ]   = Bx_face[nghost:2*nghost,   :]
+    Bx_face = np.zeros((Ny, Nx+1))
+    Bx_face[nghost:nghost+ny, nghost:nghost+nx+1] = (Az[nghost+1:nghost+ny+1, nghost:nghost+nx+1] - Az[nghost:nghost+ny, nghost:nghost+nx+1]) / dy
         
     # By = -dAz/dx at each y-face
     # By_face made so that By_face[j,i  ] is at the top face of the cell
     #                      By_face[j-1,i] is at the bottom face of the cell
-    By_face = np.zeros((ny+2*nghost, nx+2*nghost))
-    By_face[nghost:nghost+ny, nghost:nghost+nx] = -(Az[nghost+1:nghost+ny+1, nghost+1:nghost+nx+1] - Az[nghost+1:nghost+ny+1, nghost:nghost+nx]) / dx
+    By_face = np.zeros((Ny+1, Nx))
+    By_face[nghost:nghost+ny+1, nghost:nghost+nx] = -(Az[nghost:nghost+ny+1, nghost+1:nghost+nx+1] - Az[nghost:nghost+ny+1, nghost:nghost+nx]) / dx
     
-    # periodic boundary
-    By_face[:,  :nghost]   = By_face[:, -2*nghost:-nghost]   
-    By_face[:, -nghost:]   = By_face[:, nghost:2*nghost]
-    By_face[:nghost, :]    = By_face[-2*nghost:-nghost, :]   
-    By_face[-nghost:,:]    = By_face[nghost:2*nghost, :]
-
+    # Fill periodic ghost zones for staggered fields
+    boundary_conditions.periodic_bc(Bx_face, ny, nx, 'Bx-cellFace')
+    boundary_conditions.periodic_bc(By_face, ny, nx, 'By-cellFace')
+    
     # Derive cell-centered B from staggered averages (eqs 19-20)
-    q_ghost_IC_advection[5, nghost:nghost+ny, nghost:nghost+nx] = 0.5*(Bx_face[nghost:nghost+ny, nghost-1:nghost+nx-1] + Bx_face[nghost:nghost+ny, nghost:nghost+nx])
-    q_ghost_IC_advection[6, nghost:nghost+ny, nghost:nghost+nx] = 0.5*(By_face[nghost-1:nghost+ny-1, nghost:nghost+nx] + By_face[nghost:nghost+ny, nghost:nghost+nx])
-
+    q_ghost_IC_advection[5, :, :] = 0.5 * (Bx_face[:, :-1] + Bx_face[:, 1:])
+    q_ghost_IC_advection[6, :, :] = 0.5 * (By_face[:-1, :] + By_face[1:, :])
+    
+    boundary_conditions.periodic_bc(q_ghost_IC_advection, ny, nx, 'q-cellCenter')
+    
+    print(f"Step: 0, Time: 0.0")
+    divB = (
+        (Bx_face[:, 1:] - Bx_face[:, :-1]) / dx
+        +
+        (By_face[1:, :] - By_face[:-1, :]) / dy
+    )
+    print(f"  max face |div B| = {np.abs(divB).max():.3e}")
+    
     return q_ghost_IC_advection, Bx_face, By_face
 

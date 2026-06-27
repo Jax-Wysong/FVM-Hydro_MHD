@@ -73,7 +73,7 @@ def minmod(a, b):  # vectorized like Carolyn's so input can be vector valued
     return 0.5 * (np.sign(a) + np.sign(b)) * np.minimum(np.abs(a), np.abs(b))
 
 
-def PLM_x(q, Bx_face, dx, dt, gamma):  # takes conservative form
+def PLM_x(q, Bx_face, dx, gamma, dt, integrator='RK2'):  # takes conservative form
     '''
     Definition: PLM reconstruction along x -- Jacobian-based characteristic slope evolution
 
@@ -107,45 +107,49 @@ def PLM_x(q, Bx_face, dx, dt, gamma):  # takes conservative form
 
             # MC limiter (van Leer 1977, as in LeVeque 2002) -- modeled after Zingales Burgers code
             d1 = 2.0 * minmod(dl, dr)       
-            ldeltau = minmod(dc, d1)   # limited slope in primitive space
+            slope = minmod(dc, d1)   # limited slope in primitive space
 
-            A_x, A_y = Jacobian(w[:, j, i], gamma)           # per-cell 8x8 Jacobian
-            A_x[:, 5] = 0.0 # this seemed to help with the stripey behavior at tf=1
-            slope_L = (np.eye(8) - (dt/dx) * A_x) @ ldeltau       # characteristic-upwinded left slope
-            slope_R = (np.eye(8) + (dt/dx) * A_x) @ ldeltau       # characteristic-upwinded right slope
-            
-            # slope_L = (np.eye(8) - (dt/dx) * A_x)  @ dc     # use unlimited reconstruction for convergence test
-            # slope_R = (np.eye(8) + (dt/dx) * A_x)  @ dc     
-            
+            if (integrator=='RK2'):
+                w_L[:, j, i] = w[:, j, i] + 0.5*slope
+                w_R[:, j, i] = w[:, j, i] - 0.5*slope
+            elif (integrator=='CTU'):
+                A_x, A_y = Jacobian(w[:, j, i], gamma)           # per-cell 8x8 Jacobian
+                A_x[:, 5] = 0.0 # this seemed to help with the stripey behavior at tf=1
+                slope_L = (np.eye(8) - (dt/dx) * A_x) @ slope       # characteristic-upwinded left slope
+                slope_R = (np.eye(8) + (dt/dx) * A_x) @ slope       # characteristic-upwinded right slope
+                
+                # slope_L = (np.eye(8) - (dt/dx) * A_x)  @ dc     # use unlimited reconstruction for convergence test
+                # slope_R = (np.eye(8) + (dt/dx) * A_x)  @ dc     
+                    
 
-            # Gardiner & Stone (2005): transverse source term for By equation (x-sweep)
-            #          | 0                |   rho
-            #          | 0                |   ux
-            #          | 0                |   uy
-            # sigma =  | 0                |   uz
-            #          | 0                |   p
-            #          | 0                |   bx
-            #          |uy*(partial_x bx) |   by
-            #          | 0                |   bz
-            uy    = w[2, j, i]
-            #px_bx = (w[5, j, i+1] - w[5, j, i-1]) / (2*dx)
-            px_bx = (Bx_face[j, i] - Bx_face[j, i-1]) / dx
-            sigma = np.array([0, 0, 0, 0, 0, 0, uy*px_bx, 0])
-
-            w_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
-            w_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
+                # Gardiner & Stone (2005): transverse source term for By equation (x-sweep)
+                #          | 0                |   rho
+                #          | 0                |   ux
+                #          | 0                |   uy
+                # sigma =  | 0                |   uz
+                #          | 0                |   p
+                #          | 0                |   bx
+                #          |uy*(partial_x bx) |   by
+                #          | 0                |   bz
+                uy    = w[2, j, i]
+                #px_bx = (w[5, j, i+1] - w[5, j, i-1]) / (2*dx)
+                px_bx = (Bx_face[j, i] - Bx_face[j, i-1]) / dx
+                sigma = np.array([0, 0, 0, 0, 0, 0, uy*px_bx, 0])
+                
+                w_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
+                w_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
             
-            w_L[5, j, i] = Bx_face[j, i  ]
-            w_R[5, j, i] = Bx_face[j, i-1]
+            # no matter what integrator is used,
+            # overwrite the normal B face
+            w_L[5, j, i] = Bx_face[j, i+1]   # right face of cell i
+            w_R[5, j, i] = Bx_face[j, i]     # left face of cell i
             
             
-
-
     q_L = conversions.prim_to_cons(w_L, gamma)   # return interface states in conserved form
     q_R = conversions.prim_to_cons(w_R, gamma)
     return q_L, q_R
 
-def PLM_y(q, By_face, dy, dt, gamma):  # takes conservative form
+def PLM_y(q, By_face, dy, gamma, dt, integrator='RK2'):  # takes conservative form
     '''
     Definition: PLM reconstruction along y -- Jacobian-based characteristic slope evolution
 
@@ -182,35 +186,41 @@ def PLM_y(q, By_face, dy, dt, gamma):  # takes conservative form
 
             # MC limiter (van Leer 1977, as in LeVeque 2002) -- modeled after Zingales Burgers code
             d1 = 2.0 * minmod(dl, dr)       
-            ldeltau = minmod(dc, d1)   # limited slope in primitive space
-
-            A_x, A_y = Jacobian(w[:, j, i], gamma)           # per-cell 8x8 Jacobian
-            A_y[:, 6] = 0.0
-            slope_L = (np.eye(8) - (dt/dy) * A_y) @ ldeltau       # characteristic-upwinded upward slope
-            slope_R = (np.eye(8) + (dt/dy) * A_y) @ ldeltau       # characteristic-upwinded downward slope
+            slope = minmod(dc, d1)   # limited slope in primitive space
             
-            # slope_L = (np.eye(8) - (dt/dy) * A_y)  @ dc     # use unlimited reconstruction for convergence test
-            # slope_R = (np.eye(8) + (dt/dy) * A_y)  @ dc    
+            if (integrator=='RK2'):
+                w_L[:, j, i] = w[:, j, i] + 0.5*slope
+                w_R[:, j, i] = w[:, j, i] - 0.5*slope
+            elif (integrator=='CTU'):
+                A_x, A_y = Jacobian(w[:, j, i], gamma)           # per-cell 8x8 Jacobian
+                A_y[:, 6] = 0.0
+                slope_L = (np.eye(8) - (dt/dy) * A_y) @ slope       # characteristic-upwinded upward slope
+                slope_R = (np.eye(8) + (dt/dy) * A_y) @ slope       # characteristic-upwinded downward slope
+                
+                # slope_L = (np.eye(8) - (dt/dy) * A_y)  @ dc     # use unlimited reconstruction for convergence test
+                # slope_R = (np.eye(8) + (dt/dy) * A_y)  @ dc    
 
-            # Gardiner & Stone (2005): transverse source term for Bx equation (y-sweep)
-            #          | 0                |   rho
-            #          | 0                |   ux
-            #          | 0                |   uy
-            # sigma =  | 0                |   uz
-            #          | 0                |   p
-            #          |ux*(partial_y by) |   bx
-            #          | 0                |   by
-            #          | 0                |   bz
-            ux    = w[1, j, i]
-            #py_by = (w[6, j+1, i] - w[6, j-1, i]) / (2*dy)
-            py_by = (By_face[j, i] - By_face[j-1, i]) / dy
-            sigma = np.array([0, 0, 0, 0, 0, ux*py_by, 0, 0])
-
-            w_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
-            w_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
-            
-            w_L[6, j, i] = By_face[j, i]
-            w_R[6, j, i] = By_face[j-1, i]
+                # Gardiner & Stone (2005): transverse source term for Bx equation (y-sweep)
+                #          | 0                |   rho
+                #          | 0                |   ux
+                #          | 0                |   uy
+                # sigma =  | 0                |   uz
+                #          | 0                |   p
+                #          |ux*(partial_y by) |   bx
+                #          | 0                |   by
+                #          | 0                |   bz
+                ux    = w[1, j, i]
+                #py_by = (w[6, j+1, i] - w[6, j-1, i]) / (2*dy)
+                py_by = (By_face[j, i] - By_face[j-1, i]) / dy
+                sigma = np.array([0, 0, 0, 0, 0, ux*py_by, 0, 0])
+                
+                w_L[:, j, i] = w[:, j, i] + 0.5*slope_L + 0.5*dt*sigma
+                w_R[:, j, i] = w[:, j, i] - 0.5*slope_R + 0.5*dt*sigma
+                
+            # no matter what integrator is used,
+            # overwrite the normal B face
+            w_L[6, j, i] = By_face[j+1, i]   # top face of cell j
+            w_R[6, j, i] = By_face[j, i]     # bottom face of cell j
 
     q_L = conversions.prim_to_cons(w_L, gamma)   # return interface states in conserved form
     q_R = conversions.prim_to_cons(w_R, gamma)

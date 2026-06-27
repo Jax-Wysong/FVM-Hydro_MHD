@@ -1,3 +1,5 @@
+from config import nghost, DOFs
+
 def outflow_bc(q, ng, nx, ny):
     '''
     Definition: fills ghost cells on all four domain boundaries with outflow (zero-gradient) BCs
@@ -33,7 +35,7 @@ def outflow_bc(q, ng, nx, ny):
 
     return q
 
-def periodic_bc(q, ng):
+def periodic_bc(vec, ny, nx, location):
     '''
     Definition: fills ghost cells on all four domain boundaries with periodic BCs
 
@@ -55,12 +57,60 @@ def periodic_bc(q, ng):
     q_sys[N+3] = q_sys[3]    
     
     '''
-    
-    q[:,:, :ng] = q[:,:, -2*ng:-ng]
-    q[:,:, -ng:] = q[:,:, ng:2*ng]
-    
-    q[:,:ng, :] = q[:,-2*ng:-ng, :]
-    q[:,-ng:, :] = q[:,ng:2*ng, :] 
+    ng = nghost
+    if location=='q-cellCenter':
+        vec[:,:, :ng] = vec[:,:, -2*ng:-ng]
+        vec[:,:, -ng:] = vec[:,:, ng:2*ng]
+        
+        vec[:,:ng, :] = vec[:,-2*ng:-ng, :]
+        vec[:,-ng:, :] = vec[:,ng:2*ng, :] 
+    elif location=='EMF-cellCenter':
+        vec[:, :ng] = vec[:, -2*ng:-ng]
+        vec[:, -ng:] = vec[:, ng:2*ng]
+        
+        vec[:ng, :] = vec[-2*ng:-ng, :]
+        vec[-ng:, :] = vec[ng:2*ng, :] 
+    elif location=='Bx-cellFace':
+        vec[:, ng + nx] = vec[:, ng]
+        
+        # x-direction ghost faces
+        vec[:, :ng] = vec[:, nx:nx + ng]
+        vec[:, ng + nx + 1:] = vec[:, ng + 1:2*ng + 1]
+
+        # y-direction is cell-centered for Bx_face
+        vec[:ng, :] = vec[-2*ng:-ng, :]
+        vec[-ng:, :] = vec[ng:2*ng, :]
+    elif location=='By-cellFace':
+        # x-direction is cell-centered for By_face
+        vec[:, :ng] = vec[:, -2*ng:-ng]
+        vec[:, -ng:] = vec[:, ng:2*ng]
+
+        # enforce duplicate periodic boundary face
+        vec[ng + ny, :] = vec[ng, :]
+
+        # y-direction ghost faces
+        vec[:ng, :] = vec[ny:ny + ng, :]
+        vec[ng + ny + 1:, :] = vec[ng + 1:2*ng + 1, :]
+    elif location == 'EMF-cellCorner':
+        # vec.shape = (Ny+1, Nx+1)
+        # EMF_corner[J, I] is staggered in both directions.
+        # Physical corners are J = ng ... ng+ny, I = ng ... ng+nx.
+        # Right/top boundary corners are periodic duplicates.
+
+        # enforce duplicate periodic boundary columns/rows
+        vec[:, ng + nx] = vec[:, ng]
+        vec[ng + ny, :] = vec[ng, :]
+
+        # x-direction corner ghost columns
+        vec[:, :ng] = vec[:, nx:nx + ng]
+        vec[:, ng + nx + 1:] = vec[:, ng + 1:2*ng + 1]
+
+        # y-direction corner ghost rows
+        vec[:ng, :] = vec[ny:ny + ng, :]
+        vec[ng + ny + 1:, :] = vec[ng + 1:2*ng + 1, :]
+
+    else:
+        raise ValueError(f"Unknown periodic_bc location: {location}")
 
 
-    return q
+    return vec
