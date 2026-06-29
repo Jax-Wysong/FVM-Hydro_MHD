@@ -1,0 +1,182 @@
+Step: 0, Time: 0.0
+  max physical face |div B| = 1.804e-16
+
+
+N = 64
+Step: 10, Time: 0.1919863766
+Step: 20, Time: 0.3839756299
+Step: 30, Time: 0.5759751144
+Step: 40, Time: 0.7679736489
+Step: 50, Time: 0.9599728957
+Step: 60, Time: 1.1519724931
+Step: 70, Time: 1.3439788000
+Step: 80, Time: 1.5359843789
+Step: 90, Time: 1.7279884023
+Step: 100, Time: 1.9199910107
+  max physical face |div B| = 1.908e-15
+Step: 110, Time: 2.1119988231
+Step: 120, Time: 2.3040094138
+Step: 130, Time: 2.4960178558
+Step: 140, Time: 2.6880267668
+Step: 150, Time: 2.8800395467
+Step: 160, Time: 3.0720577747
+Step: 170, Time: 3.2640722868
+Step: 180, Time: 3.4560883301
+Step: 190, Time: 3.6481061541
+Step: 200, Time: 3.8401298770
+  max physical face |div B| = 2.262e-15
+Step: 210, Time: 4.0321492281
+Step: 220, Time: 4.2241701011
+Step: 230, Time: 4.4161928141
+Step: 240, Time: 4.6082222499
+Step: 250, Time: 4.8002482252
+Step: 260, Time: 4.9922760849
+Step: 270, Time: 5.1843058676
+Step: 280, Time: 5.3763427339
+Step: 290, Time: 5.5683765515
+Step: 300, Time: 5.7604109797
+  max physical face |div B| = 2.432e-15
+Step: 310, Time: 5.9524488258
+Step: 320, Time: 6.1444936938
+Step: 330, Time: 6.3365364822
+Step: 340, Time: 6.5285772787
+Step: 350, Time: 6.7206212550
+Step: 360, Time: 6.9126691335
+Step: 370, Time: 7.1047172396
+Step: 380, Time: 7.2967636165
+Step: 390, Time: 7.4888160175
+Step: 400, Time: 7.6808747349
+  max physical face |div B| = 2.431e-15
+Step: 410, Time: 7.8729375219
+Step: 420, Time: 8.0649964368
+Step: 430, Time: 8.2570596193
+Step: 440, Time: 8.4491278514
+Step: 450, Time: 8.6412016340
+Step: 460, Time: 8.8332708643
+Step: 470, Time: 9.0253439836
+Step: 480, Time: 9.2174228566
+Step: 490, Time: 9.4095067806
+Step: 500, Time: 9.6015848171
+  max physical face |div B| = 2.431e-15
+Step: 510, Time: 9.7936634321
+Step: 520, Time: 9.9857485962
+Step: 530, Time: 10.1778399247
+Step: 540, Time: 10.3699275242
+Step: 550, Time: 10.5620156910
+Step: 560, Time: 10.7541111490
+Step: 570, Time: 10.9462144887
+Step: 580, Time: 11.1383143454
+Step: 590, Time: 11.3304131775
+Step: 600, Time: 11.5225194464
+  max physical face |div B| = 2.543e-15
+Step: 610, Time: 11.7146336425
+Step: 620, Time: 11.9067463019
+Step: 630, Time: 12.0988561279
+Step: 640, Time: 12.2909717868
+Step: 650, Time: 12.4830957387
+Step: 660, Time: 12.6752206557
+Step: 670, Time: 12.8673414556
+Step: 680, Time: 13.0594668131
+Step: 690, Time: 13.2516020191
+Step: 700, Time: 13.4437408532
+  max physical face |div B| = 2.601e-15
+Step: 710, Time: 13.6358739927
+Step: 720, Time: 13.8280096133
+Step: 730, Time: 14.0201543929
+Step: 740, Time: 14.2123036905
+Step: 750, Time: 14.4044464200
+Step: 760, Time: 14.5965905224
+Step: 770, Time: 14.7887448283
+Step: 780, Time: 14.9809073001
+Step: 790, Time: 15.1730656942
+Step: 800, Time: 15.3652249551
+  max physical face |div B| = 3.175e-15
+Step: 810, Time: 15.5573929531
+Step: 820, Time: 15.7495697653
+Step: 830, Time: 15.9417406664
+Step: 840, Time: 16.1339095016
+Step: 850, Time: 16.3260855056
+Step: 860, Time: 16.5182739786
+Step: 870, Time: 16.7104587261
+Step: 880, Time: 16.9026409985
+Step: 890, Time: 17.0948291564
+Step: 900, Time: 17.2870299460
+  max physical face |div B| = 3.056e-15
+Step: 910, Time: 17.4792304832
+Step: 920, Time: 17.6714281247
+Step: 930, Time: 17.8636314523
+Step: 940, Time: 18.0558481980
+Step: 950, Time: 18.2480686148
+Step: 960, Time: 18.4402840059
+Step: 970, Time: 18.6325025075
+Step: 980, Time: 18.8247324811
+Step: 990, Time: 19.0169693577
+Step: 1000, Time: 19.2091992993
+  max physical face |div B| = 3.111e-15
+Step: 1010, Time: 19.4014308827
+Step: 1020, Time: 19.5936727046
+Step: 1030, Time: 19.7859247736
+Step: 1040, Time: 19.9781706306
+Finished at Step: 1042, Time: 20.000
+
+
+N = 64 x 64
+  rho L2 = 2.674479e-03
+  ux  L2 = 5.083360e-02
+  Bx  L2 = 5.166319e-02
+  p   L2 = 6.747009e-03
+
+
+JobId=11157361 JobName=256MC
+   UserId=wysongj2(6386657) GroupId=galaxies-REU(2480) MCS_label=N/A
+   Priority=57879 Nice=0 Account=general QOS=wysongj2
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:59:22 TimeLimit=04:00:00 TimeMin=N/A
+   SubmitTime=2026-06-28T20:16:14 EligibleTime=2026-06-28T20:16:14
+   AccrueTime=2026-06-28T20:16:14
+   StartTime=2026-06-28T20:16:16 EndTime=2026-06-29T00:16:16 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-06-28T20:16:16 Scheduler=Main
+   Partition=general-long AllocNode:Sid=dev-amd20:3003265
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=amr-227
+   BatchHost=amr-227
+   NumNodes=1 NumCPUs=1 NumTasks=1 CPUs/Task=1 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=1,mem=20G,node=1,billing=4
+   AllocTRES=cpu=1,mem=20G,node=1,billing=4
+   Socks/Node=* NtasksPerN:B:S:C=1:0:*:* CoreSpec=*
+   MinCPUsNode=1 MinMemoryNode=20G MinTmpDiskNode=0
+   Features=[intel18|(amr|acm)|nvf|nal|nif|agg|agx|(nfh|neh)|nel] DelayBoot=00:00:00
+   OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null)
+   Command=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/pjob_2D_MHD.slurm
+   WorkDir=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD
+   Comment=stdout=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N64_no_limit/output.out 
+   StdErr=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N64_no_limit/error.err
+   StdIn=/dev/null
+   StdOut=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N64_no_limit/output.out
+   
+
+
+SLURM Job ID: 11157361
+WrkDir=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD
+===================================================================================
+          JobID |            11157361 |      11157361.batch |     11157361.extern |
+        JobName |               256MC |               batch |              extern |
+           User |            wysongj2 |                     |                     |
+       NodeList |             amr-227 |             amr-227 |             amr-227 |
+         NNodes |                   1 |                   1 |                   1 |
+         NTasks |                     |                   1 |                   1 |
+          NCPUS |                   1 |                   1 |                   1 |
+      AllocGRES |                     |                     |                     |
+         ReqMem |                 20G |                     |                     |
+      Timelimit |            04:00:00 |                     |                     |
+        Elapsed |            00:59:23 |            00:59:23 |            00:59:23 |
+       TotalCPU |            00:00:00 |            00:59:14 |            00:00:00 |
+     AveCPULoad |                     |            0.997474 |                     |
+         MaxRSS |                     |             777044K |                     |
+      MaxVMSize |                     |                     |                     |
+          Start | 2026-06-28T20:16:16 | 2026-06-28T20:16:16 | 2026-06-28T20:16:16 |
+            End |             Unknown |             Unknown |             Unknown |
+       ExitCode |                 0:0 |                 0:0 |                 0:0 |
+          State |             RUNNING |             RUNNING |             RUNNING |
+===================================================================================

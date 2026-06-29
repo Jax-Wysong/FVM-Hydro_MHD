@@ -1,0 +1,95 @@
+Step: 0, Time: 0.0
+  max physical face |div B| = 1.388e-17
+
+
+N = 16
+Step: 10, Time: 0.7720729141
+Step: 20, Time: 1.5489128882
+Step: 30, Time: 2.3296740701
+Step: 40, Time: 3.1136729272
+Step: 50, Time: 3.8994539494
+Step: 60, Time: 4.6870452341
+Step: 70, Time: 5.4762874862
+Step: 80, Time: 6.2666980352
+Step: 90, Time: 7.0583639504
+Step: 100, Time: 7.8511436307
+  max physical face |div B| = 1.810e-16
+Step: 110, Time: 8.6447725537
+Step: 120, Time: 9.4393046857
+Step: 130, Time: 10.2345697746
+Step: 140, Time: 11.0305491558
+Step: 150, Time: 11.8273116702
+Step: 160, Time: 12.6245774981
+Step: 170, Time: 13.4224054536
+Step: 180, Time: 14.2209025699
+Step: 190, Time: 15.0197072677
+Step: 200, Time: 15.8188970650
+  max physical face |div B| = 2.160e-16
+Step: 210, Time: 16.6187135345
+Step: 220, Time: 17.4189032445
+Step: 230, Time: 18.2194628349
+Step: 240, Time: 19.0205208998
+Step: 250, Time: 19.8218643797
+Finished at Step: 253, Time: 20.000
+
+
+N = 16 x 16
+  rho L2 = 3.754728e-03
+  ux  L2 = 2.545746e-01
+  Bx  L2 = 2.384655e-01
+  p   L2 = 2.874918e-02
+
+
+JobId=11157098 JobName=256MC
+   UserId=wysongj2(6386657) GroupId=galaxies-REU(2480) MCS_label=N/A
+   Priority=57907 Nice=0 Account=general QOS=wysongj2
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:01:31 TimeLimit=00:10:00 TimeMin=N/A
+   SubmitTime=2026-06-28T20:10:42 EligibleTime=2026-06-28T20:10:42
+   AccrueTime=2026-06-28T20:10:42
+   StartTime=2026-06-28T20:10:44 EndTime=2026-06-28T20:20:44 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-06-28T20:10:44 Scheduler=Main
+   Partition=general-long AllocNode:Sid=dev-amd20:3003265
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=amr-222
+   BatchHost=amr-222
+   NumNodes=1 NumCPUs=1 NumTasks=1 CPUs/Task=1 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=1,mem=20G,node=1,billing=4
+   AllocTRES=cpu=1,mem=20G,node=1,billing=4
+   Socks/Node=* NtasksPerN:B:S:C=1:0:*:* CoreSpec=*
+   MinCPUsNode=1 MinMemoryNode=20G MinTmpDiskNode=0
+   Features=[intel18|(amr|acm)|nvf|nal|nif|agg|agx|(nfh|neh)|nel] DelayBoot=00:00:00
+   OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null)
+   Command=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/pjob_2D_MHD.slurm
+   WorkDir=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD
+   Comment=stdout=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N16_no_limit/output.out 
+   StdErr=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N16_no_limit/error.err
+   StdIn=/dev/null
+   StdOut=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N16_no_limit/output.out
+   
+
+
+SLURM Job ID: 11157098
+WrkDir=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD
+===================================================================================
+          JobID |            11157098 |      11157098.batch |     11157098.extern |
+        JobName |               256MC |               batch |              extern |
+           User |            wysongj2 |                     |                     |
+       NodeList |             amr-222 |             amr-222 |             amr-222 |
+         NNodes |                   1 |                   1 |                   1 |
+         NTasks |                     |                   1 |                   1 |
+          NCPUS |                   1 |                   1 |                   1 |
+      AllocGRES |                     |                     |                     |
+         ReqMem |                 20G |                     |                     |
+      Timelimit |            00:10:00 |                     |                     |
+        Elapsed |            00:01:32 |            00:01:32 |            00:01:32 |
+       TotalCPU |            00:00:00 |            00:01:30 |            00:00:00 |
+     AveCPULoad |                     |            0.978261 |                     |
+         MaxRSS |                     |             318308K |                     |
+      MaxVMSize |                     |                     |                     |
+          Start | 2026-06-28T20:10:44 | 2026-06-28T20:10:44 | 2026-06-28T20:10:44 |
+            End |             Unknown |             Unknown |             Unknown |
+       ExitCode |                 0:0 |                 0:0 |                 0:0 |
+          State |             RUNNING |             RUNNING |             RUNNING |
+===================================================================================

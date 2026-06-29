@@ -1,0 +1,124 @@
+Step: 0, Time: 0.0
+  max physical face |div B| = 8.327e-17
+
+
+N = 32
+Step: 10, Time: 0.3842192047
+Step: 20, Time: 0.7686069394
+Step: 30, Time: 1.1532528949
+Step: 40, Time: 1.5380972566
+Step: 50, Time: 1.9230867422
+Step: 60, Time: 2.3082314012
+Step: 70, Time: 2.6935967515
+Step: 80, Time: 3.0790950721
+Step: 90, Time: 3.4647566734
+Step: 100, Time: 3.8506007086
+  max physical face |div B| = 6.592e-16
+Step: 110, Time: 4.2366089635
+Step: 120, Time: 4.6227474830
+Step: 130, Time: 5.0090636283
+Step: 140, Time: 5.3955631745
+Step: 150, Time: 5.7821648226
+Step: 160, Time: 6.1689032827
+Step: 170, Time: 6.5558158391
+Step: 180, Time: 6.9428821316
+Step: 190, Time: 7.3300381338
+Step: 200, Time: 7.7173540296
+  max physical face |div B| = 6.310e-16
+Step: 210, Time: 8.1048543298
+Step: 220, Time: 8.4924585013
+Step: 230, Time: 8.8801648749
+Step: 240, Time: 9.2680311758
+Step: 250, Time: 9.6560475684
+Step: 260, Time: 10.0441236568
+Step: 270, Time: 10.4323135179
+Step: 280, Time: 10.8206800685
+Step: 290, Time: 11.2091699324
+Step: 300, Time: 11.5977239805
+  max physical face |div B| = 7.355e-16
+Step: 310, Time: 11.9864032930
+Step: 320, Time: 12.3752618642
+Step: 330, Time: 12.7641864469
+Step: 340, Time: 13.1531772413
+Step: 350, Time: 13.5422910775
+Step: 360, Time: 13.9315563109
+Step: 370, Time: 14.3208768978
+Step: 380, Time: 14.7102927355
+Step: 390, Time: 15.0998468502
+Step: 400, Time: 15.4895048219
+  max physical face |div B| = 9.315e-16
+Step: 410, Time: 15.8791928993
+Step: 420, Time: 16.2689752096
+Step: 430, Time: 16.6589130189
+Step: 440, Time: 17.0489278552
+Step: 450, Time: 17.4389982601
+Step: 460, Time: 17.8291791230
+Step: 470, Time: 18.2194992720
+Step: 480, Time: 18.6098801534
+Step: 490, Time: 19.0003318037
+Step: 500, Time: 19.3909012594
+  max physical face |div B| = 9.324e-16
+Step: 510, Time: 19.7815627488
+Finished at Step: 516, Time: 20.000
+
+
+N = 32 x 32
+  rho L2 = 4.147709e-03
+  ux  L2 = 1.447098e-01
+  Bx  L2 = 1.441661e-01
+  p   L2 = 1.875082e-02
+
+
+JobId=11157360 JobName=256MC
+   UserId=wysongj2(6386657) GroupId=galaxies-REU(2480) MCS_label=N/A
+   Priority=57879 Nice=0 Account=general QOS=wysongj2
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:08:26 TimeLimit=02:00:00 TimeMin=N/A
+   SubmitTime=2026-06-28T20:15:56 EligibleTime=2026-06-28T20:15:56
+   AccrueTime=2026-06-28T20:15:56
+   StartTime=2026-06-28T20:15:57 EndTime=2026-06-28T22:15:57 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-06-28T20:15:57 Scheduler=Main
+   Partition=general-long AllocNode:Sid=dev-amd20:3003265
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=amr-204
+   BatchHost=amr-204
+   NumNodes=1 NumCPUs=1 NumTasks=1 CPUs/Task=1 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=1,mem=20G,node=1,billing=4
+   AllocTRES=cpu=1,mem=20G,node=1,billing=4
+   Socks/Node=* NtasksPerN:B:S:C=1:0:*:* CoreSpec=*
+   MinCPUsNode=1 MinMemoryNode=20G MinTmpDiskNode=0
+   Features=[intel18|(amr|acm)|nvf|nal|nif|agg|agx|(nfh|neh)|nel] DelayBoot=00:00:00
+   OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null)
+   Command=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/pjob_2D_MHD.slurm
+   WorkDir=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD
+   Comment=stdout=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N32_no_limit/output.out 
+   StdErr=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N32_no_limit/error.err
+   StdIn=/dev/null
+   StdOut=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD/results_RK2_convergence_test/smooth_vortex_N32_no_limit/output.out
+   
+
+
+SLURM Job ID: 11157360
+WrkDir=/mnt/ffs24/home/wysongj2/FVM-Hydro_MHD/MHD/2D-MHD
+===================================================================================
+          JobID |            11157360 |      11157360.batch |     11157360.extern |
+        JobName |               256MC |               batch |              extern |
+           User |            wysongj2 |                     |                     |
+       NodeList |             amr-204 |             amr-204 |             amr-204 |
+         NNodes |                   1 |                   1 |                   1 |
+         NTasks |                     |                   1 |                   1 |
+          NCPUS |                   1 |                   1 |                   1 |
+      AllocGRES |                     |                     |                     |
+         ReqMem |                 20G |                     |                     |
+      Timelimit |            02:00:00 |                     |                     |
+        Elapsed |            00:08:27 |            00:08:27 |            00:08:27 |
+       TotalCPU |            00:00:00 |            00:08:23 |            00:00:00 |
+     AveCPULoad |                     |             0.99211 |                     |
+         MaxRSS |                     |             539920K |                     |
+      MaxVMSize |                     |                     |                     |
+          Start | 2026-06-28T20:15:57 | 2026-06-28T20:15:57 | 2026-06-28T20:15:57 |
+            End |             Unknown |             Unknown |             Unknown |
+       ExitCode |                 0:0 |                 0:0 |                 0:0 |
+          State |             RUNNING |             RUNNING |             RUNNING |
+===================================================================================
