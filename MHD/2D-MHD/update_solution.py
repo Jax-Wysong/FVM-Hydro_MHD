@@ -9,7 +9,7 @@ import CT_update as CT
 import interface_states
 import SSP_RK
 
-def evolve(q_ghosted, nghost, DOFs, nx, ny, dx, dy, C, t_final, gamma, Bx_face, By_face, Riemann, integrator,
+def evolve(q_ghosted, nghost, DOFs, nx, ny, dx, dy, C, t_final, gamma, Bx_face, By_face, Riemann, integrator, limiter,
         snapshot_callback=None, snapshot_every=0):
     '''
     Definition: advances the 2D ideal MHD equations in time using an unsplit CTU finite-volume scheme
@@ -44,6 +44,8 @@ def evolve(q_ghosted, nghost, DOFs, nx, ny, dx, dy, C, t_final, gamma, Bx_face, 
     
     all_solns.append(q[:, nghost:nghost+ny, nghost:nghost+nx].copy())
     all_t.append(t)
+    print(f"\n\nN = {ny}")
+    
     while t < t_final:
 
 
@@ -60,7 +62,7 @@ def evolve(q_ghosted, nghost, DOFs, nx, ny, dx, dy, C, t_final, gamma, Bx_face, 
         dt = min(dt, t_final - t)  # adjust final time step to hit t_final exactly
         
         if (integrator=='RK2'):
-            q, Bx_face, By_face = SSP_RK.RK2_step(Riemann, q, Bx_face, By_face, nx, ny, dx, dy, dt, gamma)
+            q, Bx_face, By_face = SSP_RK.RK2_step(Riemann, q, Bx_face, By_face, nx, ny, dx, dy, dt, gamma, limiter)
         elif (integrator=='CTU'):
             ############################################################################################
             # 3) Reconstruct left/right interface states with a piecewise linear method PLM (8.71 Zingale)
@@ -270,17 +272,21 @@ def evolve(q_ghosted, nghost, DOFs, nx, ny, dx, dy, C, t_final, gamma, Bx_face, 
         ############################################################################################
         # 7) Advance time, print progress every 100 steps, store interior snapshot
         ############################################################################################
-        
+       
         t += dt
         nt += 1
         if nt % 10 == 0:
             print(f"Step: {nt}, Time: {t:.10f}")
+        if nt%100==0:
             divB = (
                 (Bx_face[:, 1:] - Bx_face[:, :-1]) / dx
                 +
                 (By_face[1:, :] - By_face[:-1, :]) / dy
             )
-            print(f"  max face |div B| = {np.abs(divB).max():.3e}")
+            divB_phys = divB[nghost:nghost+ny, nghost:nghost+nx]
+
+            print(f"  max physical face |div B| = {np.abs(divB_phys).max():.3e}")
+            
             
 
         if snapshot_callback is not None and snapshot_every > 0 and nt % snapshot_every == 0:

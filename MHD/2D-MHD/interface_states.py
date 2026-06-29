@@ -256,7 +256,7 @@ def R_L_evecs_and_evals(w, gamma):
     cs = np.sqrt(0.5*np.abs(a**2 + ca**2 - np.sqrt((a**2 + ca**2)**2 - (4*a**2 * cax**2))))
     
     # compute sign of bx
-    S = np.sign(bx)
+    S = 1.0 if bx >= 0.0 else -1.0
     
     # compute alpha f and s (A16)
     
@@ -324,24 +324,29 @@ def R_L_evecs_and_evals(w, gamma):
 - Step 3: project the left, right, and centered differences on the characteristic variables (eq 37)
 - Step 4: Apply monotonicity constraints to the differences in the characteristic variables, (eq 38)
 - Step 5: Project the monotonized different in the characteristic variables back onto the primitive variables (eq 39)
+    - if RK2 stop here and update
 - Step 6: Compute the left- and right-interface values using the monotonized difference in the primitive variables (eqs 40 and 41)
 - Step 7: Perform the characteristic tracing, that is, subtract from the integral performed in step 6 that part of each wave family that does not reach the interface in dt/2 (eqs 42-43)
 - Step 7.5: (necessary because we are using an HLL family Riemann solver) Add additional terms to step 8 eqs 42-43, (eqs 44-45)
 - Step 8: Convert the left- and right-states in the primitive to the conserved variables, q_L and q_R
 '''
 
-def PLM_x_GS08(q, Bx_face, dx, dt, gamma):
+def PLM_x_GS08(q, Bx_face, dx, gamma, dt, limiter, integrator):
     '''
     Definition: PLM reconstruction for 1D MHD, following GS08 Athena paper
     '''
     ny_g = q.shape[1]
     nx_g = q.shape[2]
+    keep = [0, 1, 2, 3, 4, 6, 7]
+    modes = [0, 1, 2, 3, 4, 6, 7]
     w= conversions.cons_to_prim(q, gamma)   # work with primitive form for slope limiting
     w_L = np.zeros_like(q)
     w_R = np.zeros_like(q)
 
+    
     for j in range(nghost - 1, ny_g - nghost + 1): # loops go left and right 1 of physical domain
         for i in range(nghost - 1, nx_g - nghost + 1):
+            
             ### step 2 ###
             dl = w[:,j,i+1] - w[:,j,i]   # forward  difference (delta+)
             dr = w[:,j,i] - w[:,j,i-1]   # backward difference (delta-)
@@ -349,66 +354,87 @@ def PLM_x_GS08(q, Bx_face, dx, dt, gamma):
             
             ### step 3 ###
             # get right and left eigenvectors
-            R, L, lam = R_L_evecs_and_evals(w[:,j,i], gamma)
-            dla = L @ dl
-            dra = L @ dr
-            dca = L @ dc
+            R8, L8, lam8 = R_L_evecs_and_evals(w[:,j,i], gamma)
+            
+            R7 = R8[np.ix_(keep, modes)]
+            L7 = L8[np.ix_(modes, keep)]
+            
+            dl7 = dl[keep]
+            dr7 = dr[keep]
+            dc7 = dc[keep]
 
-            ## step 4 ###
-            # MC limiter (van Leer 1977, as in LeVeque 2002) -- modeled after Zingales Burgers code
-            d1a = 2.0 * minmod(dla, dra)       
-            daMC = minmod(dca, d1a)   # limited slope in primitive space
+            dla = L7 @ dl7
+            dra = L7 @ dr7
+            dca = L7 @ dc7
 
+            if limiter == 'none':
+                da = dca
+            elif limiter == 'MC':
+                ## step 4 ###
+                # MC limiter (van Leer 1977, as in LeVeque 2002) -- modeled after Zingales Burgers code
+                d1a = 2.0 * minmod(dla, dra)       
+                da = minmod(dca, d1a)   # limited slope in primitive space
+            else:
+                raise ValueError("limiter wrong")
+            
             ### step 5 ###
-            dwMC = R @ daMC
+            dw7 = R7 @ da
             
+            dw = np.zeros(8)
+            dw[keep] = dw7
+            
+            if (integrator=='RK2'):
+                w_L[:, j, i] = w[:, j, i] + 0.5*dw
+                w_R[:, j, i] = w[:, j, i] - 0.5*dw
+            elif (integrator=='CTU'):
+                R, L, lam = R_L_evecs_and_evals(w[:,j,i], gamma)
             ### step 6 ###
-            lam_M = np.max(lam)
-            lam_0 = np.min(lam)
-            w_hat_L = w[:,j,i] + (0.5 - np.maximum(lam_M,0)*dt/(2*dx)) * dwMC
-            w_hat_R = w[:,j,i] - (0.5 - np.minimum(lam_0,0)*dt/(2*dx)) * dwMC
+                lam_M = np.max(lam)
+                lam_0 = np.min(lam)
+                w_hat_L = w[:,j,i] + (0.5 - np.maximum(lam_M,0)*dt/(2*dx)) * dw
+                w_hat_R = w[:,j,i] - (0.5 - np.minimum(lam_0,0)*dt/(2*dx)) * dw
 
-            ### step 7 ###
-            sum_L = 0.0
-            for alpha in range(len(lam)):
-                if lam[alpha]>0:
-                    sum_L += ((lam_M - lam[alpha])* np.dot(L[alpha,:], dwMC)) * R[:,alpha]
-            sum_R = 0.0
-            for alpha in range(len(lam)):
-                if lam[alpha]<0:
-                    sum_R += ((lam_0 - lam[alpha])* np.dot(L[alpha,:], dwMC)) * R[:,alpha]       
-            
-            # Gardiner & Stone (2005): transverse source term for By equation (x-sweep)
-            #          | 0                |   rho
-            #          | 0                |   ux
-            #          | 0                |   uy
-            # sigma =  | 0                |   uz
-            #          | 0                |   p
-            #          | 0                |   bx
-            #          |uy*(partial_x bx) |   by
-            #          | 0                |   bz
-            uy    = w[2, j, i]
-            px_bx = (Bx_face[j, i] - Bx_face[j, i-1]) / dx
-            sigma = np.array([0, 0, 0, 0, 0, 0, uy*px_bx, 0])
+                ### step 7 ###
+                sum_L = 0.0
+                for alpha in range(len(lam)):
+                    if lam[alpha]>0:
+                        sum_L += ((lam_M - lam[alpha])* np.dot(L[alpha,:], dw)) * R[:,alpha]
+                sum_R = 0.0
+                for alpha in range(len(lam)):
+                    if lam[alpha]<0:
+                        sum_R += ((lam_0 - lam[alpha])* np.dot(L[alpha,:], dw)) * R[:,alpha]       
+                
+                # Gardiner & Stone (2005): transverse source term for By equation (x-sweep)
+                #          | 0                |   rho
+                #          | 0                |   ux
+                #          | 0                |   uy
+                # sigma =  | 0                |   uz
+                #          | 0                |   p
+                #          | 0                |   bx
+                #          |uy*(partial_x bx) |   by
+                #          | 0                |   bz
+                uy    = w[2, j, i]
+                px_bx = (Bx_face[j, i] - Bx_face[j, i-1]) / dx
+                sigma = np.array([0, 0, 0, 0, 0, 0, uy*px_bx, 0])
 
-            w_L[:,j,i] = w_hat_L + dt/(2*dx) * sum_L + 0.5*dt*sigma
-            w_R[:,j,i] = w_hat_R + dt/(2*dx) * sum_R + 0.5*dt*sigma
+                w_L[:,j,i] = w_hat_L + dt/(2*dx) * sum_L + 0.5*dt*sigma
+                w_R[:,j,i] = w_hat_R + dt/(2*dx) * sum_R + 0.5*dt*sigma
 
-            ### step 7.5 ###
-            delta_w_L = 0.0
-            delta_w_R = 0.0
-            for alpha in range(len(lam)):
-                if lam[alpha]<0:
-                    delta_w_L -= dt/(2*dx) * ((lam[alpha] - lam_M)* np.dot(L[alpha,:], dwMC)) * R[:,alpha]
-                elif lam[alpha]>0:
-                    delta_w_R -= dt/(2*dx) * ((lam[alpha] - lam_0)* np.dot(L[alpha,:], dwMC)) * R[:,alpha]
+                ### step 7.5 ###
+                delta_w_L = 0.0
+                delta_w_R = 0.0
+                for alpha in range(len(lam)):
+                    if lam[alpha]<0:
+                        delta_w_L -= dt/(2*dx) * ((lam[alpha] - lam_M)* np.dot(L[alpha,:], dw)) * R[:,alpha]
+                    elif lam[alpha]>0:
+                        delta_w_R -= dt/(2*dx) * ((lam[alpha] - lam_0)* np.dot(L[alpha,:], dw)) * R[:,alpha]
 
-            w_L[:,j,i] += delta_w_L
-            w_R[:,j,i] += delta_w_R
+                w_L[:,j,i] += delta_w_L
+                w_R[:,j,i] += delta_w_R
 
-            w_L[5, j, i] = Bx_face[j, i  ]
-            w_R[5, j, i] = Bx_face[j, i-1]
-
+            # no matter what keep the mag field face consistent
+            w_L[5, j, i] = Bx_face[j, i+1]   # right face of cell i
+            w_R[5, j, i] = Bx_face[j, i]     # left face of cell i
         
 
     ### step 8 ###
@@ -416,7 +442,7 @@ def PLM_x_GS08(q, Bx_face, dx, dt, gamma):
     q_R = conversions.prim_to_cons(w_R, gamma)
     return q_L, q_R
 
-def PLM_y_GS08(q, By_face, dy, dt, gamma):
+def PLM_y_GS08(q, By_face, dy, gamma, dt, limiter, integrator):
     '''
     Definition: PLM reconstruction for 1D MHD, following GS08 Athena paper
     '''
@@ -424,79 +450,112 @@ def PLM_y_GS08(q, By_face, dy, dt, gamma):
     ROT_Y = np.array([0, 2, 3, 1, 4, 6, 7, 5])   # (rho, vy, vz, vx, p, by, bz, bx)    
     ny_g = q.shape[1]
     nx_g = q.shape[2]
+    keep = [0, 1, 2, 3, 4, 6, 7]
+    modes = [0, 1, 2, 3, 4, 6, 7]
     w= conversions.cons_to_prim(q, gamma)   # work with primitive form for slope limiting
     w_L = np.zeros_like(q)
     w_R = np.zeros_like(q)
 
+
     for j in range(nghost - 1, ny_g - nghost + 1): # loops go left and right 1 of physical domain
         for i in range(nghost - 1, nx_g - nghost + 1):
+            # Rotated primitive states
+            w0_rot = w[ROT_Y, j, i]
+            
             ### step 2 ###
-            dl = w[ROT_Y,j+1,i] - w[ROT_Y,j,i]   # forward  difference (delta+)
-            dr = w[ROT_Y,j,i] - w[ROT_Y,j-1,i]   # backward difference (delta-)
-            dc = 0.5*(w[ROT_Y,j+1,i] - w[ROT_Y,j-1,i]) # centered difference
+            dl_rot = w[ROT_Y,j+1,i] - w[ROT_Y,j,i]   # forward  difference (delta+)
+            dr_rot = w[ROT_Y,j,i] - w[ROT_Y,j-1,i]   # backward difference (delta-)
+            dc_rot = 0.5*(w[ROT_Y,j+1,i] - w[ROT_Y,j-1,i]) # centered difference
             
             ### step 3 ###
             # get right and left eigenvectors
-            R, L, lam = R_L_evecs_and_evals(w[ROT_Y,j,i], gamma)
-            dla = L @ dl
-            dra = L @ dr
-            dca = L @ dc
+            R8, L8, lam8 = R_L_evecs_and_evals(w0_rot, gamma)
+            
+            # Reduced 7-variable system excluding B_normal
+            R7 = R8[np.ix_(keep, modes)]
+            L7 = L8[np.ix_(modes, keep)]
 
-            ## step 4 ###
-            # MC limiter (van Leer 1977, as in LeVeque 2002) -- modeled after Zingales Burgers code
-            d1a = 2.0 * minmod(dla, dra)       
-            daMC = minmod(dca, d1a)   # limited slope in primitive space
+            dl7 = dl_rot[keep]
+            dr7 = dr_rot[keep]
+            dc7 = dc_rot[keep]
 
+            # Project differences onto characteristic variables
+            dla = L7 @ dl7
+            dra = L7 @ dr7
+            dca = L7 @ dc7
+
+            if limiter == "none":
+                da = dca
+            elif limiter == "MC":
+                ## step 4 ###
+                # MC limiter (van Leer 1977, as in LeVeque 2002) -- modeled after Zingales Burgers code
+                d1a = 2.0 * minmod(dla, dra)       
+                da = minmod(dca, d1a)   # limited slope in primitive space
+            else:
+                raise ValueError("wrong limiter")
+            
             ### step 5 ###
-            dwMC = R @ daMC
+            dw7 = R7 @ da
             
-            ### step 6 ###
-            lam_M = np.max(lam)
-            lam_0 = np.min(lam)
-            w_hat_L = w[ROT_Y,j,i] + (0.5 - np.maximum(lam_M,0)*dt/(2*dy)) * dwMC
-            w_hat_R = w[ROT_Y,j,i] - (0.5 - np.minimum(lam_0,0)*dt/(2*dy)) * dwMC
+            dw = np.zeros(8)
+            dw[keep] = dw7
+            
+            if (integrator=='RK2'):
+                wL_rot = w0_rot + 0.5*dw
+                wR_rot = w0_rot - 0.5*dw
+                # Unrotate back into original primitive ordering.
+                # Since w_rot = w[ROT_Y], assign back with the same map.
+                w_L[ROT_Y, j, i] = wL_rot
+                w_R[ROT_Y, j, i] = wR_rot
+            elif (integrator=='CTU'):
+                R, L, lam = R_L_evecs_and_evals(w0_rot, gamma)
+                ### step 6 ###
+                lam_M = np.max(lam)
+                lam_0 = np.min(lam)
+                w_hat_L = w[ROT_Y,j,i] + (0.5 - np.maximum(lam_M,0)*dt/(2*dy)) * dw
+                w_hat_R = w[ROT_Y,j,i] - (0.5 - np.minimum(lam_0,0)*dt/(2*dy)) * dw
 
-            ### step 7 ###
-            sum_L = 0.0
-            for alpha in range(len(lam)):
-                if lam[alpha]>0:
-                    sum_L += ((lam_M - lam[alpha])* np.dot(L[alpha,:], dwMC)) * R[:,alpha]
-            sum_R = 0.0
-            for alpha in range(len(lam)):
-                if lam[alpha]<0:
-                    sum_R += ((lam_0 - lam[alpha])* np.dot(L[alpha,:], dwMC)) * R[:,alpha]       
-            
-            # Gardiner & Stone (2005): transverse source term for Bx equation (y-sweep)
-            #          | 0                |   rho
-            #          | 0                |   ux
-            #          | 0                |   uy
-            # sigma =  | 0                |   uz
-            #          | 0                |   p
-            #          |ux*(partial_y by) |   bx
-            #          | 0                |   by
-            #          | 0                |   bz
-            ux    = w[1, j, i]
-            py_by = (By_face[j, i] - By_face[j-1, i]) / dy
-            sigma = np.array([0, 0, 0, 0, 0, 0, 0, ux*py_by])
+                ### step 7 ###
+                sum_L = 0.0
+                for alpha in range(len(lam)):
+                    if lam[alpha]>0:
+                        sum_L += ((lam_M - lam[alpha])* np.dot(L[alpha,:], dw)) * R[:,alpha]
+                sum_R = 0.0
+                for alpha in range(len(lam)):
+                    if lam[alpha]<0:
+                        sum_R += ((lam_0 - lam[alpha])* np.dot(L[alpha,:], dw)) * R[:,alpha]       
+                
+                # Gardiner & Stone (2005): transverse source term for Bx equation (y-sweep)
+                #          | 0                |   rho
+                #          | 0                |   ux
+                #          | 0                |   uy
+                # sigma =  | 0                |   uz
+                #          | 0                |   p
+                #          |ux*(partial_y by) |   bx
+                #          | 0                |   by
+                #          | 0                |   bz
+                ux    = w[1, j, i]
+                py_by = (By_face[j, i] - By_face[j-1, i]) / dy
+                sigma = np.array([0, 0, 0, 0, 0, 0, 0, ux*py_by])
 
-            w_L[ROT_Y,j,i] = w_hat_L + dt/(2*dy) * sum_L + 0.5*dt*sigma
-            w_R[ROT_Y,j,i] = w_hat_R + dt/(2*dy) * sum_R + 0.5*dt*sigma
+                w_L[ROT_Y,j,i] = w_hat_L + dt/(2*dy) * sum_L + 0.5*dt*sigma
+                w_R[ROT_Y,j,i] = w_hat_R + dt/(2*dy) * sum_R + 0.5*dt*sigma
+                
+                ### step 7.5 ###
+                delta_w_L = 0.0
+                delta_w_R = 0.0
+                for alpha in range(len(lam)):
+                    if lam[alpha]<0:
+                        delta_w_L -= dt/(2*dy) * ((lam[alpha] - lam_M)* np.dot(L[alpha,:], dw)) * R[:,alpha]
+                    elif lam[alpha]>0:
+                        delta_w_R -= dt/(2*dy) * ((lam[alpha] - lam_0)* np.dot(L[alpha,:], dw)) * R[:,alpha]
+                
+                w_L[ROT_Y,j,i] += delta_w_L
+                w_R[ROT_Y,j,i] += delta_w_R
             
-            ### step 7.5 ###
-            delta_w_L = 0.0
-            delta_w_R = 0.0
-            for alpha in range(len(lam)):
-                if lam[alpha]<0:
-                    delta_w_L -= dt/(2*dy) * ((lam[alpha] - lam_M)* np.dot(L[alpha,:], dwMC)) * R[:,alpha]
-                elif lam[alpha]>0:
-                    delta_w_R -= dt/(2*dy) * ((lam[alpha] - lam_0)* np.dot(L[alpha,:], dwMC)) * R[:,alpha]
-            
-            w_L[ROT_Y,j,i] += delta_w_L
-            w_R[ROT_Y,j,i] += delta_w_R
-            
-            
-            w_L[6, j, i] = By_face[j, i  ]
-            w_R[6, j, i] = By_face[j-1, i]
+
+            w_L[6, j, i] = By_face[j+1, i]   # top face of cell j
+            w_R[6, j, i] = By_face[j, i]     # bottom face of cell j
         
 
     ### step 8 ###

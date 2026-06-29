@@ -54,62 +54,81 @@ def calculate_EMF_corner(EMFx_face, EMFy_face, \
     '''
 
     
-    #### initializing array for corner EMF
-    EMF_corner = np.zeros((Ny+1,Nx+1)) 
-    
-    for j in range(nghost, nghost+ny+1):
-        for i in range(nghost, nghost+nx+1):
-            # equation (50) gives us the piecewise relations used in the following
-            ########################################
-            # finding
-            # (partial_y EMFz)_{i+1/2,j+1/4}
-            ########################################
-            if  np.sign(rho_ux_face[j-1,i]) > 0:
-                dEz_dy_xp_quarter = 2.0*(EMFy_face[j,i-1] - EMF_cc[j-1,i-1])/dy # Equation (45)
-            elif np.sign(rho_ux_face[j-1,i]) < 0:
-                dEz_dy_xp_quarter = 2.0*(EMFy_face[j,i] - EMF_cc[j-1,i])/dy
-            else:
-                dEz_dy_xp_quarter = 0.5*(2.0*(EMFy_face[j,i-1] - EMF_cc[j-1,i-1])/dy + 2.0*(EMFy_face[j,i] - EMF_cc[j-1,i])/dy)
-            
-            ######################################## 
-            # finding 
-            # (partial_y EMFz)_{i+1/2,j+3/4}
-            ########################################
-            if np.sign(rho_ux_face[j,i]) > 0:
-                dEz_dy_xp_three_quarter = 2.0*(EMF_cc[j,i-1] - EMFy_face[j,i-1])/dy
-            elif np.sign(rho_ux_face[j,i]) < 0:
-                dEz_dy_xp_three_quarter = 2.0*(EMF_cc[j,i] - EMFy_face[j,i])/dy
-            else:
-                dEz_dy_xp_three_quarter = 0.5*(2.0*(EMF_cc[j,i-1] - EMFy_face[j,i-1])/dy + 2.0*(EMF_cc[j,i] - EMFy_face[j,i])/dy)
-            
-            ######################################## 
-            # finding 
-            # (partial_x EMFz)_{i+1/4,j+1/2}
-            ########################################
-            if  np.sign(rho_uy_face[j,i-1]) > 0:
-                dEz_dx_yp_quarter = 2.0*(EMFx_face[j-1,i] - EMF_cc[j-1,i-1])/dx # Equation (45)
-            elif np.sign(rho_uy_face[j,i-1]) < 0:
-                dEz_dx_yp_quarter = 2.0*(EMFx_face[j,i] - EMF_cc[j,i-1])/dx
-            else:
-                dEz_dx_yp_quarter = 0.5*(2.0*(EMFx_face[j-1,i] - EMF_cc[j-1,i-1])/dx + 2.0*(EMFx_face[j,i] - EMF_cc[j,i-1])/dx)
-            
-            ######################################## 
-            # finding 
-            # (partial_x EMFz)_{i+3/4,j+1/2}
-            ########################################
-            if np.sign(rho_uy_face[j,i]) > 0:
-                dEz_dx_yp_three_quarter = 2.0*(EMF_cc[j-1,i] - EMFx_face[j-1,i])/dx
-            elif np.sign(rho_uy_face[j,i]) < 0:
-                dEz_dx_yp_three_quarter = 2.0*(EMF_cc[j,i] - EMFx_face[j,i])/dx
-            else:
-                dEz_dx_yp_three_quarter = 0.5*(2.0*(EMF_cc[j-1,i] - EMFx_face[j-1,i])/dx + 2.0*(EMF_cc[j,i] - EMFx_face[j,i])/dx)
-            
-            
-            EMF_corner[j,i] = (
-                0.25*(EMFx_face[j-1,i] + EMFx_face[j,i] + EMFy_face[j,i-1] + EMFy_face[j,i]) \
-                + dy/8*(dEz_dy_xp_quarter - dEz_dy_xp_three_quarter) \
-                + dx/8*(dEz_dx_yp_quarter - dEz_dx_yp_three_quarter)
-            ) # Equation (41)
+    EMF_corner = np.zeros((Ny+1, Nx+1))
+
+    # Slice aliases for the physical corner range:
+    #   j runs nghost..nghost+ny  (ny+1 corners)
+    #   i runs nghost..nghost+nx  (nx+1 corners)
+    jJ   = slice(nghost,   nghost+ny+1)  # J
+    jJm1 = slice(nghost-1, nghost+ny)    # J-1
+    iI   = slice(nghost,   nghost+nx+1)  # I
+    iIm1 = slice(nghost-1, nghost+nx)    # I-1
+
+    # (partial_y EMFz)_{i+1/2, j+1/4}  — upwind on rho_ux_face[j-1, i]  (Eq. 45/50)
+    s  = np.sign(rho_ux_face[jJm1, iI])
+    A  = 2.0 * (EMFy_face[jJ, iIm1] - EMF_cc[jJm1, iIm1]) / dy
+    B  = 2.0 * (EMFy_face[jJ, iI]   - EMF_cc[jJm1, iI]  ) / dy
+    dEz_dy_xp_quarter = np.where(s > 0, A, np.where(s < 0, B, 0.5*(A + B)))
+
+    # (partial_y EMFz)_{i+1/2, j+3/4}  — upwind on rho_ux_face[j, i]
+    s  = np.sign(rho_ux_face[jJ, iI])
+    A  = 2.0 * (EMF_cc[jJ, iIm1] - EMFy_face[jJ, iIm1]) / dy
+    B  = 2.0 * (EMF_cc[jJ, iI]   - EMFy_face[jJ, iI]  ) / dy
+    dEz_dy_xp_three_quarter = np.where(s > 0, A, np.where(s < 0, B, 0.5*(A + B)))
+
+    # (partial_x EMFz)_{i+1/4, j+1/2}  — upwind on rho_uy_face[j, i-1]  (Eq. 45/50)
+    s  = np.sign(rho_uy_face[jJ, iIm1])
+    A  = 2.0 * (EMFx_face[jJm1, iI] - EMF_cc[jJm1, iIm1]) / dx
+    B  = 2.0 * (EMFx_face[jJ,   iI] - EMF_cc[jJ,   iIm1]) / dx
+    dEz_dx_yp_quarter = np.where(s > 0, A, np.where(s < 0, B, 0.5*(A + B)))
+
+    # (partial_x EMFz)_{i+3/4, j+1/2}  — upwind on rho_uy_face[j, i]
+    s  = np.sign(rho_uy_face[jJ, iI])
+    A  = 2.0 * (EMF_cc[jJm1, iI] - EMFx_face[jJm1, iI]) / dx
+    B  = 2.0 * (EMF_cc[jJ,   iI] - EMFx_face[jJ,   iI]) / dx
+    dEz_dx_yp_three_quarter = np.where(s > 0, A, np.where(s < 0, B, 0.5*(A + B)))
+
+    # Equation (41)
+    EMF_corner[jJ, iI] = (
+        0.25*(EMFx_face[jJm1, iI] + EMFx_face[jJ, iI]
+            + EMFy_face[jJ, iIm1] + EMFy_face[jJ, iI])
+        + dy/8 * (dEz_dy_xp_quarter     - dEz_dy_xp_three_quarter)
+        + dx/8 * (dEz_dx_yp_quarter     - dEz_dx_yp_three_quarter)
+    )
+
+    # ---- original scalar loop (kept for reference) ----
+    # for j in range(nghost, nghost+ny+1):
+    #     for i in range(nghost, nghost+nx+1):
+    #         if  np.sign(rho_ux_face[j-1,i]) > 0:
+    #             dEz_dy_xp_quarter = 2.0*(EMFy_face[j,i-1] - EMF_cc[j-1,i-1])/dy
+    #         elif np.sign(rho_ux_face[j-1,i]) < 0:
+    #             dEz_dy_xp_quarter = 2.0*(EMFy_face[j,i] - EMF_cc[j-1,i])/dy
+    #         else:
+    #             dEz_dy_xp_quarter = 0.5*(2.0*(EMFy_face[j,i-1] - EMF_cc[j-1,i-1])/dy + 2.0*(EMFy_face[j,i] - EMF_cc[j-1,i])/dy)
+    #         if np.sign(rho_ux_face[j,i]) > 0:
+    #             dEz_dy_xp_three_quarter = 2.0*(EMF_cc[j,i-1] - EMFy_face[j,i-1])/dy
+    #         elif np.sign(rho_ux_face[j,i]) < 0:
+    #             dEz_dy_xp_three_quarter = 2.0*(EMF_cc[j,i] - EMFy_face[j,i])/dy
+    #         else:
+    #             dEz_dy_xp_three_quarter = 0.5*(2.0*(EMF_cc[j,i-1] - EMFy_face[j,i-1])/dy + 2.0*(EMF_cc[j,i] - EMFy_face[j,i])/dy)
+    #         if  np.sign(rho_uy_face[j,i-1]) > 0:
+    #             dEz_dx_yp_quarter = 2.0*(EMFx_face[j-1,i] - EMF_cc[j-1,i-1])/dx
+    #         elif np.sign(rho_uy_face[j,i-1]) < 0:
+    #             dEz_dx_yp_quarter = 2.0*(EMFx_face[j,i] - EMF_cc[j,i-1])/dx
+    #         else:
+    #             dEz_dx_yp_quarter = 0.5*(2.0*(EMFx_face[j-1,i] - EMF_cc[j-1,i-1])/dx + 2.0*(EMFx_face[j,i] - EMF_cc[j,i-1])/dx)
+    #         if np.sign(rho_uy_face[j,i]) > 0:
+    #             dEz_dx_yp_three_quarter = 2.0*(EMF_cc[j-1,i] - EMFx_face[j-1,i])/dx
+    #         elif np.sign(rho_uy_face[j,i]) < 0:
+    #             dEz_dx_yp_three_quarter = 2.0*(EMF_cc[j,i] - EMFx_face[j,i])/dx
+    #         else:
+    #             dEz_dx_yp_three_quarter = 0.5*(2.0*(EMF_cc[j-1,i] - EMFx_face[j-1,i])/dx + 2.0*(EMF_cc[j,i] - EMFx_face[j,i])/dx)
+    #         EMF_corner[j,i] = (
+    #             0.25*(EMFx_face[j-1,i] + EMFx_face[j,i] + EMFy_face[j,i-1] + EMFy_face[j,i])
+    #             + dy/8*(dEz_dy_xp_quarter - dEz_dy_xp_three_quarter)
+    #             + dx/8*(dEz_dx_yp_quarter - dEz_dx_yp_three_quarter)
+    #         )
+    # ---- end original loop ----
             
     boundary_conditions.periodic_bc(EMF_corner, ny, nx, 'EMF-cellCorner')
     

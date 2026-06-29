@@ -9,7 +9,7 @@ import CT_update_RK
 
 
 
-def f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann):
+def f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann, limiter):
     ## note to self:
     ## q, Bx_face, and By_face should all have BCs
     ## applied before coming in here!
@@ -25,8 +25,8 @@ def f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann):
     ############################################################
     # reconstruct q at the x- and y-interfaces 
     ############################################################
-    q_L_x, q_R_x = interface_states.PLM_x(q, Bx_face, dx, gamma, dt=0.0, integrator='RK2') 
-    q_L_y, q_R_y = interface_states.PLM_y(q, By_face, dy, gamma, dt=0.0, integrator='RK2') 
+    q_L_x, q_R_x = interface_states.PLM_x_GS08(q, Bx_face, dx, gamma, dt=0.0, limiter='none', integrator='RK2') 
+    q_L_y, q_R_y = interface_states.PLM_y_GS08(q, By_face, dy, gamma, dt=0.0, limiter='none', integrator='RK2') 
     
     ############################################################
     # step 2
@@ -107,10 +107,14 @@ def f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann):
     # build the RHS (spatial derivative only) update of q for RK
     ############################################################
     kq = np.zeros_like(q)
-    for j in range(nghost, nghost+ny):
-        for i in range(nghost, nghost+nx):
-            kq[:,j,i] = -(F_x[:,j,i+1] - F_x[:,j,i])/dx \
-                        -(F_y[:,j+1,i] - F_y[:,j,i])/dy
+    # for j in range(nghost, nghost+ny):
+    #     for i in range(nghost, nghost+nx):
+    #         kq[:,j,i] = -(F_x[:,j,i+1] - F_x[:,j,i])/dx \
+    #                     -(F_y[:,j+1,i] - F_y[:,j,i])/dy
+    kq[:, nghost:nghost+ny, nghost:nghost+nx] = \
+        -(F_x[:, nghost:nghost+ny, nghost+1:nghost+nx+1] - F_x[:, nghost:nghost+ny, nghost:nghost+nx]) / dx \
+        -(F_y[:, nghost+1:nghost+ny+1, nghost:nghost+nx] - F_y[:, nghost:nghost+ny, nghost:nghost+nx]) / dy
+
     
     ############################################################
     # step 7
@@ -122,13 +126,21 @@ def f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann):
     kBy_face = np.zeros_like(By_face) # shape (Ny+1, Nx)
     
     # x face loop (needs a plus 1 in x-dir)
-    for j in range(nghost, nghost+ny):
-        for i in range(nghost, nghost+nx+1):
-            kBx_face[j,i] = -(EMF_corner[j+1,i] - EMF_corner[j,i])/dy
+    # for j in range(nghost, nghost+ny):
+    #     for i in range(nghost, nghost+nx+1):
+    #         kBx_face[j,i] = -(EMF_corner[j+1,i] - EMF_corner[j,i])/dy
+    kBx_face[nghost:nghost+ny, nghost:nghost+nx+1] = \
+        -(EMF_corner[nghost+1:nghost+ny+1, nghost:nghost+nx+1]
+        - EMF_corner[nghost:nghost+ny,     nghost:nghost+nx+1]) / dy
+
     # y face loop (needs a plus 1 in y-dir)
-    for j in range(nghost, nghost+ny+1):
-        for i in range(nghost, nghost+nx):
-            kBy_face[j,i] = (EMF_corner[j,i+1] - EMF_corner[j,i])/dx
+    # for j in range(nghost, nghost+ny+1):
+    #     for i in range(nghost, nghost+nx):
+    #         kBy_face[j,i] = (EMF_corner[j,i+1] - EMF_corner[j,i])/dx
+    kBy_face[nghost:nghost+ny+1, nghost:nghost+nx] = \
+        (EMF_corner[nghost:nghost+ny+1, nghost+1:nghost+nx+1]
+       - EMF_corner[nghost:nghost+ny+1, nghost:nghost+nx]) / dx
+
     
     # align solution with cell-centered derived fields
     ## probably redundant but conceptually cleaner
@@ -137,7 +149,7 @@ def f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann):
 
     return kq, kBx_face, kBy_face
 
-def RK2_step(Riemann, q, Bx_face, By_face, nx, ny, dx, dy, dt, gamma):
+def RK2_step(Riemann, q, Bx_face, By_face, nx, ny, dx, dy, dt, gamma, limiter):
     ####################
     # stage 1
     ####################
@@ -145,7 +157,7 @@ def RK2_step(Riemann, q, Bx_face, By_face, nx, ny, dx, dy, dt, gamma):
     q[5, :, :] = 0.5 * (Bx_face[:, :-1] + Bx_face[:, 1:])
     q[6, :, :] = 0.5 * (By_face[:-1, :] + By_face[1:, :])
     
-    k1q, k1Bx_face, k1By_face = f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann) 
+    k1q, k1Bx_face, k1By_face = f(q, Bx_face, By_face, nx, ny, dx, dy, gamma, Riemann, limiter) 
     q_star = q + dt * k1q
     Bx_face_star = Bx_face + dt * k1Bx_face
     By_face_star = By_face + dt * k1By_face
@@ -162,7 +174,7 @@ def RK2_step(Riemann, q, Bx_face, By_face, nx, ny, dx, dy, dt, gamma):
     ####################
     # stage 2
     ####################
-    k2q, k2Bx_face, k2By_face = f(q_star, Bx_face_star, By_face_star, nx, ny, dx, dy, gamma, Riemann)               
+    k2q, k2Bx_face, k2By_face = f(q_star, Bx_face_star, By_face_star, nx, ny, dx, dy, gamma, Riemann, limiter)               
     q_next = q + 0.5 * dt * (k1q + k2q)
     Bx_face_next = Bx_face + 0.5 * dt * (k1Bx_face + k2Bx_face)
     By_face_next = By_face + 0.5 * dt * (k1By_face + k2By_face)
